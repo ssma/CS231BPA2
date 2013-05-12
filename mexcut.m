@@ -1,4 +1,5 @@
 function alpha = mexcut()
-  U = [1,2;3,4;5,6]
+  U = [inf,2;inf,4;5,inf]
   V = magic(3)
-  mexEnergyMin(U,V)
+  alpha = mexEnergyMin(U,V)
+  size(alpha),
