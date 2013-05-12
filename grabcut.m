@@ -9,7 +9,11 @@ imagesc(im_data);
 disp('Draw a bounding box to specify the rough location of the foreground');
 set(gca,'Units','pixels');
 ginput(1);
-p1=get(gca,'CurrentPoint');fr=rbbox;p2=get(gca,'CurrentPoint');
+p1=get(gca,'CurrentPoint');
+disp('p1');
+fr=rbbox;
+p2=get(gca,'CurrentPoint');
+disp('p2');
 p=round([p1;p2]);
 xmin=min(p(:,1));xmax=max(p(:,1));
 ymin=min(p(:,2));ymax=max(p(:,2));
@@ -39,6 +43,9 @@ end
 % grabcut algorithm
 disp('grabcut algorithm');
 
+stream0 = RandStream('mt19937ar','Seed',0);
+RandStream.setDefaultStream(stream0);
+
 num_components_fg = 5;
 num_components_bg = 5;
 pi_fg = {0.2, 0.2, 0.2, 0.2, 0.2};
@@ -48,7 +55,7 @@ mu_bg = {zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1)};
 sigma_fg = {eye(3), eye(3), eye(3), eye(3), eye(3)};
 sigma_bg = {eye(3), eye(3), eye(3), eye(3), eye(3)};
 beta = 2.0;
-gamma = 1.0;
+gamma = 100.0;
 use_diagonals = 0;
 epsilon_U_kmeans = 0.001;
 epsilon_U = 0.001;
@@ -63,10 +70,11 @@ k_bg = random('unid', num_components_bg * ones(1, size(flat_z, 2)));
 
 last_E = inf;
 [pi_fg, mu_fg, sigma_fg, k_fg, pi_bg, mu_bg, sigma_bg, k_bg] = update_GMM(flat_z, flat_alpha, pi_fg, mu_fg, sigma_fg, k_fg, num_components_fg, pi_bg, mu_bg, sigma_bg, k_bg, num_components_bg, epsilon_U_kmeans, 1);
-while True,
+while true,
 	[pi_fg, mu_fg, sigma_fg, k_fg, pi_bg, mu_bg, sigma_bg, k_bg] = update_GMM(flat_z, flat_alpha, pi_fg, mu_fg, sigma_fg, k_fg, num_components_fg, pi_bg, mu_bg, sigma_bg, k_bg, num_components_bg, epsilon_U, 0);
-	[flat_alpha, E] = update_alpha(pi_fg, mu_fg, sigma_fg, pi_bg, mu_bg, sigma_bg, U_infinitizer, connection_weights);
-	if E > last_E - epsilon_E
+	[flat_alpha, E] = update_alpha(flat_z, pi_fg, mu_fg, sigma_fg, pi_bg, mu_bg, sigma_bg, U_infinitizer, connection_weights);
+	last_E - E,
+	if last_E - E < epsilon_E
 		break;
 	end;
 	last_E = E;

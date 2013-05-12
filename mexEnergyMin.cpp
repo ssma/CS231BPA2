@@ -15,10 +15,14 @@
  * 
  * Inputs:
  * - U: A Nx2 matrix of D values. Left column is for alpha=0, right for alpha=1
- * - V: A NxN matrix. Value at (i,j) is v_ij when alpha_i != alpha_j
+ * - V: A Tx3 matrix.  Each row is of the form [i, j, w_{ij}].  If a row is not included, that means they're not connected.
+ *
+ * Outputs:
+ * - alpha: A Nx1 matrix with alpha values.
+ * - E: The E achieved by this minimization.
  */
 
-void minimizeEnergy(double* U, double* V, int N, double *out);
+void minimizeEnergy(double* U, double* V, int N, int T, double *alpha, double *E);
 
 /*
  * Interface with MATLAB
@@ -27,6 +31,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
   double *U, *V;
   double *alpha;
+  double *E;
   int usize1,usize2,vsize1,vsize2;
   
   //Error check input/output sizes
@@ -42,29 +47,32 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
   
   //Error checks
   if (usize2 != 2) mexErrMsgTxt("ERROR: U must contain 2 columns.");
-  if (usize1 != vsize1 || vsize1 != vsize2) mexErrMsgTxt("ERROR: Matrix dimensions must match.");
+  if (vsize2 != 3) mexErrMsgTxt("ERROR: V must contain 3 columns.");
   
   //Output the labelings back to MATLAB
+  assert(nlhs == 2);
   plhs[0] = mxCreateDoubleMatrix(usize1, 1, mxREAL);
+  plhs[1] = mxCreateDoubleMatrix(1, 1, mxREAL);
   alpha = mxGetPr(plhs[0]);
+  E = mxGetPr(plhs[1]);
   
   //Get the new labelings
-  minimizeEnergy(U,V, usize1, alpha);
+  minimizeEnergy(U,V, usize1, vsize1, alpha, E);
 }
 
 /*
  * Determine the variables that will minimize the energy in
  * the equation.
  */
-void minimizeEnergy(double* U, double* V, int N, double *out)
+void minimizeEnergy(double* U, double* V, int N, int T, double *alpha, double *E)
 {
   // initialization
   std::vector<Energy<float,float,float>::Var> vars(N);
-  Energy<float,float,float> e(N,N*N);
+  Energy<float,float,float> e(N,T);
   
   //Add nodes and unary terms
   mexPrintf("Adding Nodes and Unary Terms\n");
-  for (int i=1;i<N;i++)
+  for (int i=0;i<N;i++)
   {
     //Add node
     vars[i] = e.add_variable();
@@ -74,21 +82,29 @@ void minimizeEnergy(double* U, double* V, int N, double *out)
   
   //Add pairwise terms
   mexPrintf("Adding Pairwise Terms\n");
-  for (int i=0;i<N;i++)
-    for (int j=0;j<N;j++) 
-    {
-      e.add_term2(vars[i],vars[j],0,V[N*j+i],V[N*j+i],0);
-    }
+//  for (int i=0;i<N;i++)
+//    for (int j=0;j<N;j++) 
+//    {
+//      e.add_term2(vars[i],vars[j],0,V[N*j+i],V[N*j+i],0);
+//    }
+
+  for (int t = 0; t < T; ++t) {
+    int i = V[t] - 1;
+    int j = V[T + t] - 1;
+    double val = V[2 * T + t];
+    e.add_term2(vars[i],vars[j],0,val,val,0);
   //Minimize the Energy
+  }
   Energy<float,float,float>::TotalValue mnE = e.minimize();
   
   mexPrintf("Minimum Energy: %f\n",mnE);
   //Get new alphas
   for (int i=0;i<N;i++)
   {
-    if (e.get_var(vars[i])) out[i] = 1;
-    else out[i] = 0;
+    if (e.get_var(vars[i])) alpha[i] = 1;
+    else alpha[i] = 0;
   }
+  *E = (double)mnE;
 }
 
 

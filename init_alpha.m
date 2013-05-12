@@ -1,6 +1,6 @@
 function [flat_alpha, U_infinitizer] = init_alpha(z, bbox)
-	U_infinitizer = zeros(length(flat_alpha), 2);
 	flat_alpha = zeros(1, size(z, 1) * size(z, 2));
+	U_infinitizer = zeros(length(flat_alpha), 2);
 	t = 1;
 	xmin = bbox(1);
 	ymin = bbox(2);
