@@ -4,11 +4,15 @@ function [pi_fg, mu_fg, sigma_fg, k_fg, pi_bg, mu_bg, sigma_bg, k_bg] = update_G
         [pi_fg, mu_fg, sigma_fg, pi_bg, mu_bg, sigma_bg] = update_all_pi_mu_sigma(flat_z, flat_alpha, k_fg, k_bg, num_components_fg, num_components_bg);
         if restrict_to_kmeans,
             for c = 1:num_components_fg
-                pi_fg{c} = 1.0 / num_components_fg;
+		if pi_fg{c} > 0.0
+	                pi_fg{c} = 1.0 / num_components_fg;
+		end;
                 sigma_fg{c} = eye(size(flat_z, 1));
             end;
             for c = 1:num_components_bg
-                pi_bg{c} = 1.0 / num_components_bg;
+		if pi_bg{c} > 0.0
+	                pi_bg{c} = 1.0 / num_components_bg;
+		end;
                 sigma_bg{c} = eye(size(flat_z, 1));
             end;
         end;
