@@ -1,7 +1,7 @@
 function scores = eval_grabcut(data_dir, seg_dir, box_dir)
   files = dir([data_dir '/*.*']);
   scores = [];
-  for i=1:3%size(files,1)
+  for i=1:size(files,1)
     if (files(i).isdir) 
       continue
     end
