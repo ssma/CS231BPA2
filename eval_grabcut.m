@@ -1,14 +1,15 @@
-function scores = eval_grabcut(data_dir, seg_dir, box_dir)
+function scores = eval_grabcut(data_dir, seg_dir, box_dir, params_filename)
+  params = load(params_filename);
   files = dir([data_dir '/*.*']);
   scores = [];
-  num_components_fg = 5;
-  num_components_bg = 5;
-  beta = 2.0;
-  gamma = 10.0;
-  use_diagonals = 0;
-  epsilon_U_kmeans = 2.0;
-  epsilon_U = 2.0;
-  epsilon_E = 100.0;
+  num_components_fg = params.num_components_fg;
+  num_components_bg = params.num_components_bg;
+  beta = params.beta;
+  gamma = params.gamma;
+  use_diagonals = params.use_diagonals;
+  epsilon_U_kmeans = params.epsilon_U_kmeans;
+  epsilon_U = params.epsilon_U;
+  epsilon_E = params.epsilon_E;
   cachedir = 'grabcut_cache';
   image_basenames = {};
   for i=1:size(files,1)
@@ -40,7 +41,15 @@ function scores = eval_grabcut(data_dir, seg_dir, box_dir)
     %run grabcut
     image_basename = [imname ext];
     image_basenames{end+1} = image_basename;
-    alpha = get_alpha(im_data, bbox, num_components_fg, num_components_bg, beta, gamma, use_diagonals, epsilon_U_kmeans, epsilon_U, epsilon_E, image_basename, cachedir);
+    alpha = [];
+    try
+	grrr = load([cachedir '/' image_basename '-num_components_fg=' int2str(num_components_fg) '-num_components_bg=' int2str(num_components_bg) '-beta=' num2str(beta) '-gamma=' num2str(gamma) '-use_diagonals=' int2str(use_diagonals) '-epsilon_U_kmeans=' num2str(epsilon_U_kmeans) '-epsilon_U=' num2str(epsilon_U) '-epsilon_E=' num2str(epsilon_E) '.mat']);
+	alpha = grrr.alpha;
+	disp(['HOORAY ' image_basename]);
+    catch
+	alpha = get_alpha(im_data, bbox, num_components_fg, num_components_bg, beta, gamma, use_diagonals, epsilon_U_kmeans, epsilon_U, epsilon_E, image_basename, cachedir);
+    end;
+
     size(alpha)
     
     %calculate score

@@ -8,12 +8,28 @@ RandStream.setDefaultStream(stream0);
 
 %num_components_fg = 5;
 %num_components_bg = 5;
-pi_fg = {0.2, 0.2, 0.2, 0.2, 0.2};
-pi_bg = {0.2, 0.2, 0.2, 0.2, 0.2};
-mu_fg = {zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1)};
-mu_bg = {zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1)};
-sigma_fg = {eye(3), eye(3), eye(3), eye(3), eye(3)};
-sigma_bg = {eye(3), eye(3), eye(3), eye(3), eye(3)};
+pi_fg = {};
+pi_bg = {};
+mu_fg = {};
+mu_bg = {};
+sigma_fg = {};
+sigma_bg = {};
+for c = 1:num_components_fg
+	pi_fg{end+1} = 1.0 / num_components_fg;
+	mu_fg{end+1} = zeros(3, 1);
+	sigma_fg{end+1} = eye(3);
+end;
+for c = 1:num_components_bg
+	pi_bg{end+1} = 1.0 / num_components_bg;
+	mu_bg{end+1} = zeros(3, 1);
+	sigma_bg{end+1} = eye(3);
+end;
+%pi_fg = {0.2, 0.2, 0.2, 0.2, 0.2};
+%pi_bg = {0.2, 0.2, 0.2, 0.2, 0.2};
+%mu_fg = {zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1)};
+%mu_bg = {zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1), zeros(3, 1)};
+%sigma_fg = {eye(3), eye(3), eye(3), eye(3), eye(3)};
+%sigma_bg = {eye(3), eye(3), eye(3), eye(3), eye(3)};
 %beta = 2.0;
 %gamma = 10.0;
 %use_diagonals = 0;
