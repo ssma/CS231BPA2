@@ -1,5 +1,5 @@
 function [pi, mu, sigma] = update_pi_mu_sigma_one_alpha(flat_z, k, num_components)
-    min_component_size = 0;
+    min_component_size = 1;
     pi = {};
     mu = {};
     sigma = {};

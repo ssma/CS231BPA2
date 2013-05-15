@@ -2,6 +2,7 @@ function scores = eval_grabcut(data_dir, seg_dir, box_dir, params_filename)
   params = load(params_filename);
   files = dir([data_dir '/*.*']);
   scores = [];
+  accuracies = [];
   num_components_fg = params.num_components_fg;
   num_components_bg = params.num_components_bg;
   beta = params.beta;
@@ -56,13 +57,15 @@ function scores = eval_grabcut(data_dir, seg_dir, box_dir, params_filename)
     intersect = sum(sum(alpha .* seg_data > 0))
     union = sum(sum(alpha + seg_data > 0))
     score = intersect / union
-    
+    accuracy = sum(sum(alpha == seg_data)) / (1.0 * size(seg_data, 1) * size(seg_data, 2))
+
     scores = [scores; score]
+    accuracies = [accuracies; accuracy]
     
     %display our segmentation
     imagesc(repmat(alpha,[1,1,3]) .* im_data)
     
   end
   cachename = [cachedir '/scores-num_components_fg=' int2str(num_components_fg) '-num_components_bg=' int2str(num_components_bg) '-beta=' num2str(beta) '-gamma=' num2str(gamma) '-use_diagonals=' int2str(use_diagonals) '-epsilon_U_kmeans=' num2str(epsilon_U_kmeans) '-epsilon_U=' num2str(epsilon_U) '-epsilon_E=' num2str(epsilon_E) '.mat'];
-  save(cachename, 'image_basenames', 'scores');
+  save(cachename, 'image_basenames', 'scores', 'accuracies');
 
